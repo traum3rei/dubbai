@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Processing Pipeline</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Processing Pipeline</h1>
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Upload Audio/Video File:</label>
+                <input type="file" name="file" id="file" accept=".mp3,.wav,.ogg,.flac,.mp4,.mkv,.avi" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="language">Language:</label>
+                <select name="language" id="language">
+                    <option value="auto">Auto-detect</option>
+                    <option value="en">English</option>
+                    <option value="de">German</option>
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="target_lang">Target Language:</label>
+                <select name="target_lang" id="target_lang">
+                    <option value="en">English</option>
+                    <option value="de">German</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="whisper_model">Whisper Model:</label>
+                <select name="whisper_model" id="whisper_model">
+                    <option value="base">Base</option>
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                    
+                </select>
+            </div>
+                       
+            <div class="form-group">
+                <label for="min_speakers">Min Speakers:</label>
+                <input type="number" name="min_speakers" id="min_speakers" min="1" max="10" value="1" required>
+            </div>
+            <div class="form-group">
+                <label for="max_speakers">Max Speakers:</label>
+                <input type="number" name="max_speakers" id="max_speakers" min="1" max="10" value="2" required>
+            </div>
+
+            <div class="form-group">
+                <label>Reference Audio:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="reference_audio" value="same" checked>
+                        Use same audio for voice reference
+                    </label>
+                    <label>
+                        <input type="radio" name="reference_audio" value="upload-new">
+                        Upload different reference audio
+                    </label>
+                </div>
+            </div>
+            <!-- Add emotion detection toggle -->
+            <div class="form-group">
+                <label for="emotion_detection">Emotion Detection:</label>
+                <select name="emotion_detection" id="emotion_detection">
+                    <option value="on" selected>On</option>
+                    <option value="off">Off</option>
+                </select>
+            </div>
+            <button type="submit">Process Audio</button>
+        </form>
+    </div>
+</body>
+</html>

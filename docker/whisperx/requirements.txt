@@ -1,0 +1,7 @@
+git+https://github.com/m-bain/whisperx.git
+flask
+flask-cors
+werkzeug
+torch
+torchaudio
+torchvision

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Results - DubbAI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Processing Results for Job: {{ job_id }}</h1>
+        
+        <h2>Generated Audio</h2>
+        {% if audio_file_url_path %}
+            <audio controls>
+                <source src="{{ url_for('download_file', filepath_in_output=audio_file_url_path) }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+            <!-- files_info.final_output will now have forward slashes -->
+            <p><a href="{{ url_for('download_file', filepath_in_output=audio_file_url_path) }}" download>Download Audio ({{ files_info.final_output.split('/')[-1] if files_info.final_output else 'output.wav' }})</a></p>
+        {% else %}
+            <p>Generated audio not available.</p>
+        {% endif %}
+
+        <h2>Transcription</h2>
+        <div class="transcription-box">
+            <pre>{{ transcription_text }}</pre>
+        </div>
+        {% if transcription_file_url_path %}
+        <!-- files_info.transcription will now have forward slashes -->
+        <p><a href="{{ url_for('download_file', filepath_in_output=transcription_file_url_path) }}" download>Download Transcription ({{ files_info.transcription.split('/')[-1] if files_info.transcription else 'transcription.txt' }})</a></p>
+        {% endif %}
+
+        <h2>Processed Files</h2>
+        <p><a href="{{ url_for('process_files', job_id=job_id) }}" target="_blank">View all intermediate files (JSON)</a></p>
+        
+        <h3>Downloadable Intermediate Files:</h3>
+        <ul>
+            <!-- files_info here is the pre-processed one from app.py -->
+            {% for key, path_val in files_info.items() %}
+                {% if path_val and key != 'original' %} {# Original is in uploads, not directly downloadable via this route #}
+                    <li>
+                        {{ key }}: 
+                        <!-- path_val directly used as it's already processed -->
+                        <a href="{{ url_for('download_file', filepath_in_output=path_val) }}" download>
+                            Download {{ path_val.split('/')[-1] }}
+                        </a>
+                    </li>
+                {% elif key == 'original' and path_val %}
+                     <li>
+                        {{ key }} (original input): {{ path_val.split('/')[-1] }} 
+                        <em>(Not directly downloadable from this list; source file)</em>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        
+        <p><a href="{{ url_for('index') }}">Process another file</a></p>
+    </div>
+</body>
+</html>

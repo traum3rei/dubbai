@@ -1,0 +1,13 @@
+/web-uploads
+/web-output
+/web-status
+/checkpoints
+/frontend/media_pipeline/__pycache__
+/jupyter/notebooks/.ipynb_checkpoints
+/jupyter/notebooks/.ipynb_checkpoints
+/jupyter/output
+/jupyter/output
+/docker/whisperx/uploads
+/docker/whisperx/models
+.env
+/frontend/.env

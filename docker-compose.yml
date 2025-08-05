@@ -1,0 +1,106 @@
+version: '3.8'
+
+networks:
+  dubbai_network:
+    driver: bridge
+
+services:
+  fish-speech:
+    image: fishaudio/fish-speech:latest
+    build:
+      context: .
+      dockerfile: ./docker/fish-speech.Dockerfile
+      args:
+        - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+    ports:
+      - "7859:7859"
+      - "7860:7860"
+    networks:
+      - dubbai_network
+    env_file: .env
+    environment:
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+    volumes:
+      - ./checkpoints:/opt/fish-speech/checkpoints
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  whisperx:
+    build: 
+      context: .
+      dockerfile: ./docker/whisperx.Dockerfile
+      args:
+        - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+    container_name: whisperx
+    ports:
+      - "5001:5001"
+    networks:
+      - dubbai_network
+    volumes:
+      - ./docker/whisperx/uploads:/app/uploads
+      - ./docker/whisperx/output:/app/output
+      - ./docker/whisperx/models:/app/models  # Cache models here
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - HF_TOKEN=${HUGGINGFACE_TOKEN}          # Add HF token
+      - HF_HUB_OFFLINE=0                       # Enable online access for diarization
+      - TRANSFORMERS_OFFLINE=0                 # Enable online access for models
+      - HF_HOME=/app/models                    # Cache directory
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  dubbai:
+    build:
+      context: .
+      dockerfile: ./docker/dubbai.Dockerfile
+    container_name: dubbai
+    ports:
+      - "8888:8888"
+    networks:
+      - dubbai_network
+    volumes:
+      - ./jupyter/notebooks:/DubbAI/notebooks
+      - ./jupyter/input:/DubbAI/input
+      - ./jupyter/output:/DubbAI/output
+      - ./jupyter/models:/DubbAI/models
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --no-browser --NotebookApp.token=''
+    depends_on:
+      - whisperx
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  web-frontend:
+    build:
+      context: .
+      dockerfile: ./docker/web-frontend.Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - dubbai_network
+    volumes:
+      - ./web-uploads:/app/uploads
+      - ./web-output:/app/output
+      - ./web-status:/app/status
+      - ./frontend:/app/frontend
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=your-secret-key-here
+    depends_on:
+      - fish-speech
+      - dubbai
+      - whisperx
